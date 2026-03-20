@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+            <div>
+                <span class="section-label"><i class="fa-solid fa-table"></i> Dataset Overview</span>
+                <h1 class="display-6 mt-3 mb-2">Previewing the first 100 rows in the live retail table.</h1>
+                <p class="soft-text mb-0">Use this page to sanity-check the loaded data before working through the dashboard and story.</p>
+            </div>
+            <div class="pill-list">
+                <span><i class="fa-solid fa-database me-2 text-primary"></i>{{ "{:,}".format(total_records) }} total rows</span>
+                {% if summary %}
+                <span><i class="fa-solid fa-boxes-stacked me-2 text-success"></i>{{ "{:,}".format(summary.total_units) }} total units</span>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    {% if summary %}
+    <section class="metric-grid mb-4">
+        <article class="metric-card">
+            <span class="metric-label">Top Position</span>
+            <span class="metric-value">{{ summary.top_position['Product Position'] }}</span>
+            <p class="metric-note">{{ "{:,}".format(summary.top_position['Sales Volume']) }} units sold.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Top Category</span>
+            <span class="metric-value">{{ summary.top_category['Product Category'] }}</span>
+            <p class="metric-note">{{ "{:,}".format(summary.top_category['Sales Volume']) }} units sold.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Top Audience</span>
+            <span class="metric-value">{{ summary.top_demographic['Consumer Demographics'] }}</span>
+            <p class="metric-note">{{ "{:,}".format(summary.top_demographic['Sales Volume']) }} units sold.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Average Price</span>
+            <span class="metric-value">${{ "%.2f"|format(summary.avg_price) }}</span>
+            <p class="metric-note">Current mean shelf price in the processed table.</p>
+        </article>
+    </section>
+    {% endif %}
+
+    <section class="table-card">
+        <div class="table-responsive" style="max-height: 720px; overflow-y: auto;">
+            <table class="table table-hover mb-0 align-middle">
+                <thead class="sticky-top">
+                    <tr>
+                        {% for col in columns %}
+                        <th scope="col" class="py-3 px-4 fw-semibold text-nowrap">{{ col }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in data %}
+                    <tr>
+                        {% for item in row %}
+                        <td class="py-3 px-4 text-nowrap">{{ item }}</td>
+                        {% endfor %}
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="100%" class="text-center py-5 text-muted">
+                            <h4>No Data Available</h4>
+                            <p>Please upload a dataset or run the pipeline first.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+{% endblock %}

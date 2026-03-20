@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-8">
+                <span class="section-label"><i class="fa-solid fa-wave-square"></i> Executive Dashboard</span>
+                <h1 class="display-5 mt-3 mb-3">Retail performance, cleaned up and ready to act on.</h1>
+                <p class="soft-text lead mb-0">
+                    The dashboard now reads directly from the processed SQLite dataset and surfaces the strongest levers:
+                    placement, pricing, promotion, and customer mix.
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="pill-list justify-content-lg-end">
+                    <span><i class="fa-solid fa-store me-2 text-success"></i>{{ summary.top_position['Product Position'] }} leads placement</span>
+                    <span><i class="fa-solid fa-tags me-2 text-warning"></i>{{ "%.1f"|format(summary.promo_lift) }}% promo lift</span>
+                    <span><i class="fa-solid fa-bullseye me-2 text-primary"></i>{{ summary.top_demographic['Consumer Demographics'] }} buys most</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="metric-grid mb-4">
+        <article class="metric-card">
+            <span class="metric-label">Total Records</span>
+            <span class="metric-value">{{ "{:,}".format(summary.total_records) }}</span>
+            <p class="metric-note">Rows processed into the live analytics model.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Units Sold</span>
+            <span class="metric-value">{{ "{:,}".format(summary.total_units) }}</span>
+            <p class="metric-note">Aggregate sales volume across the current dataset.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Average Price</span>
+            <span class="metric-value">${{ "%.2f"|format(summary.avg_price) }}</span>
+            <p class="metric-note">Mean shelf price across all tracked products.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Conversion Index</span>
+            <span class="metric-value">{{ "%.1f"|format(summary.avg_conversion) }}</span>
+            <p class="metric-note">Average units sold per normalized traffic weight.</p>
+        </article>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <article class="signal-card h-100">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-sparkles"></i> Demand Signal</span>
+                <h2 class="mb-3">Placement is the strongest operational lever.</h2>
+                <p class="soft-text mb-0">
+                    <strong>{{ summary.top_position['Product Position'] }}</strong> placements produce
+                    <strong>{{ "{:,}".format(summary.top_position['Sales Volume']) }}</strong> units, giving the team a clear
+                    rule for premium facings and campaign launches.
+                </p>
+            </article>
+        </div>
+        <div class="col-lg-6">
+            <article class="signal-card h-100">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-users-viewfinder"></i> Audience Signal</span>
+                <h2 class="mb-3">{{ summary.top_demographic['Consumer Demographics'] }} are driving the largest share.</h2>
+                <p class="soft-text mb-0">
+                    Their segment generates <strong>{{ "{:,}".format(summary.top_demographic['Sales Volume']) }}</strong> units,
+                    so assortment, promotions, and layout tests should be optimized for that audience first.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="dashboard-grid mb-4">
+        <article class="chart-card">
+            <div class="chart-title">
+                <h3>Placement Performance</h3>
+                <span class="stat-chip">Best: {{ summary.top_position['Product Position'] }}</span>
+            </div>
+            <div class="chart-frame" id="chart-position"></div>
+        </article>
+        <article class="chart-card">
+            <div class="chart-title">
+                <h3>Category Contribution</h3>
+                <span class="stat-chip">{{ summary.top_category['Product Category'] }} leads</span>
+            </div>
+            <div class="chart-frame" id="chart-category"></div>
+        </article>
+        <article class="chart-card tight">
+            <div class="chart-title">
+                <h3>Promotion Impact</h3>
+                <span class="stat-chip">{{ "%.1f"|format(summary.promo_lift) }}% uplift</span>
+            </div>
+            <div class="chart-frame" id="chart-promo"></div>
+        </article>
+        <article class="chart-card tight">
+            <div class="chart-title">
+                <h3>Traffic Strength</h3>
+                <span class="stat-chip">{{ summary.traffic_winner['Foot Traffic'] }} traffic wins</span>
+            </div>
+            <div class="chart-frame" id="chart-traffic"></div>
+        </article>
+        <article class="chart-card">
+            <div class="chart-title">
+                <h3>Customer Demand</h3>
+                <span class="stat-chip">{{ summary.top_demographic['Consumer Demographics'] }}</span>
+            </div>
+            <div class="chart-frame" id="chart-demographics"></div>
+        </article>
+        <article class="chart-card">
+            <div class="chart-title">
+                <h3>Pricing Posture</h3>
+                <span class="stat-chip">{{ summary.price_winner['Price Status'] }}</span>
+            </div>
+            <div class="chart-frame" id="chart-price"></div>
+        </article>
+        <article class="chart-card tight">
+            <div class="chart-title">
+                <h3>Seasonality</h3>
+                <span class="stat-chip">Seasonal vs core</span>
+            </div>
+            <div class="chart-frame" id="chart-seasonal"></div>
+        </article>
+        <article class="chart-card tight">
+            <div class="chart-title">
+                <h3>Top Products</h3>
+                <span class="stat-chip">Highest-volume SKUs</span>
+            </div>
+            <div class="chart-frame" id="chart-top10"></div>
+        </article>
+    </section>
+
+    <section class="row g-4">
+        <div class="col-lg-6">
+            <article class="section-card p-4 h-100 rounded-4">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-list-check"></i> Priority Actions</span>
+                <div class="recommendation-list">
+                    {% for recommendation in summary.recommendations %}
+                    <div class="recommendation-card">
+                        <h3 class="h5 mb-2">{{ recommendation.title }}</h3>
+                        <p class="soft-text mb-0">{{ recommendation.body }}</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+        <div class="col-lg-6">
+            <article class="section-card p-4 h-100 rounded-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="eyebrow"><i class="fa-solid fa-ranking-star"></i> Leading Products</span>
+                    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('story') }}">Read Story</a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th>Sales</th>
+                                <th>Avg Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in summary.top_products %}
+                            <tr>
+                                <td>{{ row['Product ID'] }}</td>
+                                <td>{{ row['Product Category'] }}</td>
+                                <td>{{ "{:,}".format(row['sales_volume']) }}</td>
+                                <td>${{ "%.2f"|format(row['avg_price']) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const charts = {{ charts | tojson }};
+
+        function renderChart(id, key) {
+            const figure = JSON.parse(charts[key]);
+            Plotly.newPlot(id, figure.data, figure.layout, {responsive: true, displayModeBar: false});
+        }
+
+        renderChart('chart-position', 'sales_by_position');
+        renderChart('chart-category', 'sales_by_category');
+        renderChart('chart-promo', 'promotion_impact');
+        renderChart('chart-traffic', 'traffic_impact');
+        renderChart('chart-demographics', 'demographics');
+        renderChart('chart-price', 'price_vs_competitor');
+        renderChart('chart-seasonal', 'seasonal');
+        renderChart('chart-top10', 'top_10');
+    });
+</script>
+{% endblock %}

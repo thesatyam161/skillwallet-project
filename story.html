@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <div class="row g-4 align-items-center">
+            <div class="col-lg-8">
+                <span class="section-label"><i class="fa-solid fa-book-open"></i> Data Story</span>
+                <h1 class="display-5 mt-3 mb-3">A cleaner narrative from raw retail rows to decisions.</h1>
+                <p class="soft-text lead mb-0">
+                    The dark-mode clash is gone. This story page now uses the same visual system as the dashboard and
+                    walks through the actual demand signals in the database.
+                </p>
+            </div>
+            <div class="col-lg-4">
+                <div class="pill-list justify-content-lg-end">
+                    <span><i class="fa-solid fa-chart-pie me-2 text-primary"></i>{{ summary.top_category['Product Category'] }} is the biggest category</span>
+                    <span><i class="fa-solid fa-arrow-trend-up me-2 text-success"></i>{{ summary.price_winner['Price Status'] }} performs best</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="story-grid">
+        <article class="story-scene">
+            <div class="story-copy">
+                <span class="story-step">Chapter 01</span>
+                <h2>Category balance defines the portfolio baseline.</h2>
+                <p class="soft-text">
+                    <strong>{{ summary.top_category['Product Category'] }}</strong> contributes the largest sales block at
+                    <strong>{{ "{:,}".format(summary.top_category['Sales Volume']) }}</strong> units. This is the anchor category
+                    for forecasting, replenishment, and assortment experiments.
+                </p>
+                <div class="story-callout">
+                    Inventory planning should start with category mix, not just SKU velocity, because the biggest category
+                    controls the broadest revenue surface.
+                </div>
+            </div>
+            <div class="chart-card mb-0">
+                <div class="chart-frame" id="story-chart-category"></div>
+            </div>
+        </article>
+
+        <article class="story-scene">
+            <div class="story-copy">
+                <span class="story-step">Chapter 02</span>
+                <h2>Placement is where merchandising turns into measurable lift.</h2>
+                <p class="soft-text">
+                    The strongest location is <strong>{{ summary.top_position['Product Position'] }}</strong>, producing
+                    <strong>{{ "{:,}".format(summary.top_position['Sales Volume']) }}</strong> units. That makes premium shelf
+                    real estate a managed asset instead of a styling choice.
+                </p>
+                <div class="story-callout">
+                    Reserve that location for new launches, high-margin bundles, and seasonal pushes where visibility compounds quickly.
+                </div>
+            </div>
+            <div class="chart-card mb-0">
+                <div class="chart-frame" id="story-chart-position"></div>
+            </div>
+        </article>
+
+        <article class="story-scene">
+            <div class="story-copy">
+                <span class="story-step">Chapter 03</span>
+                <h2>Promotions work, but only if they stay focused.</h2>
+                <p class="soft-text">
+                    Promoted products outperform standard products by <strong>{{ "%.1f"|format(summary.promo_lift) }}%</strong> on average.
+                    The gain is real, which means blanket discounting is unnecessary. Target the products that already have placement or audience momentum.
+                </p>
+                <div class="story-callout">
+                    Promotion should amplify existing winners, not rescue weak items without a placement or traffic strategy.
+                </div>
+            </div>
+            <div class="chart-card mb-0">
+                <div class="chart-frame" id="story-chart-promo"></div>
+            </div>
+        </article>
+
+        <article class="story-scene">
+            <div class="story-copy">
+                <span class="story-step">Chapter 04</span>
+                <h2>{{ summary.top_demographic['Consumer Demographics'] }} are the clearest customer priority.</h2>
+                <p class="soft-text">
+                    This demographic accounts for <strong>{{ "{:,}".format(summary.top_demographic['Sales Volume']) }}</strong> units.
+                    Messaging, assortment, and layout testing should be measured against whether they improve performance with this group first.
+                </p>
+                <div class="story-callout">
+                    When one audience leads this clearly, you simplify creative direction and reduce random campaign churn.
+                </div>
+            </div>
+            <div class="chart-card mb-0">
+                <div class="chart-frame" id="story-chart-demo"></div>
+            </div>
+        </article>
+
+        <article class="story-scene">
+            <div class="story-copy">
+                <span class="story-step">Chapter 05</span>
+                <h2>Pricing needs to follow the winning market stance.</h2>
+                <p class="soft-text">
+                    <strong>{{ summary.price_winner['Price Status'] }}</strong> products average
+                    <strong>{{ "%.1f"|format(summary.price_winner['Sales Volume']) }}</strong> units, which makes competitive
+                    positioning a visible contributor to demand, not just a margin control.
+                </p>
+                <div class="story-callout">
+                    Combine the winning price stance with the best placement and the strongest audience segment to build repeatable commercial plays.
+                </div>
+            </div>
+            <div class="chart-card mb-0">
+                <div class="chart-frame" id="story-chart-price"></div>
+            </div>
+        </article>
+    </section>
+
+    <section class="section-card p-4 rounded-4 mt-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+            <div>
+                <span class="eyebrow"><i class="fa-solid fa-lightbulb"></i> Recommendations</span>
+                <h2 class="mt-3 mb-1">What to do next</h2>
+                <p class="soft-text mb-0">Three actions supported by the current data model.</p>
+            </div>
+            <a class="btn btn-primary" href="{{ url_for('insights') }}">Open Decision Summary</a>
+        </div>
+        <div class="recommendation-list">
+            {% for recommendation in summary.recommendations %}
+            <div class="recommendation-card">
+                <h3 class="h5 mb-2">{{ recommendation.title }}</h3>
+                <p class="soft-text mb-0">{{ recommendation.body }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const charts = {{ charts | tojson }};
+
+        function renderChart(id, key) {
+            const figure = JSON.parse(charts[key]);
+            Plotly.newPlot(id, figure.data, figure.layout, {responsive: true, displayModeBar: false});
+        }
+
+        renderChart('story-chart-category', 'sales_by_category');
+        renderChart('story-chart-position', 'sales_by_position');
+        renderChart('story-chart-promo', 'promotion_impact');
+        renderChart('story-chart-demo', 'demographics');
+        renderChart('story-chart-price', 'price_vs_competitor');
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <span class="section-label"><i class="fa-solid fa-cloud-arrow-up"></i> Upload Dataset</span>
+        <h1 class="display-5 mt-3 mb-3">Load a retail CSV with the exact project schema.</h1>
+        <p class="soft-text lead mb-0">
+            The pipeline now validates your file before writing to SQLite, so invalid schemas fail early with a useful message.
+        </p>
+    </section>
+
+    <div class="row g-4 align-items-start">
+        <div class="col-lg-7">
+            <div class="upload-card rounded-4 overflow-hidden">
+                <div class="card-header border-0 p-4" style="background: linear-gradient(135deg, #0f766e, #1d4ed8);">
+                    <h2 class="fw-bold mb-0 text-white text-center">Upload Sales Data</h2>
+                    <p class="text-center text-white-50 mb-0 mt-2">CSV only. The processed file replaces the current `retail_sales` table.</p>
+                </div>
+                <div class="card-body p-4 p-lg-5">
+                    <form method="POST" enctype="multipart/form-data" class="upload-form">
+                        <div class="upload-area rounded-4 p-5 text-center mb-4">
+                            <i class="fa-solid fa-file-csv display-3 mb-3 text-primary"></i>
+                            <h4 class="fw-bold">Drag and drop a file here</h4>
+                            <p class="soft-text small">or click to browse your CSV file</p>
+                            <input class="form-control form-control-file position-absolute top-0 start-0 w-100 h-100 opacity-0 cursor-pointer"
+                                   type="file"
+                                   id="file"
+                                   name="file"
+                                   accept=".csv"
+                                   required>
+                        </div>
+
+                        <div id="file-name-display" class="alert alert-secondary d-none d-flex align-items-center mb-4">
+                            <i class="fa-solid fa-check-circle text-success me-2 fs-5"></i>
+                            <span class="fw-semibold text-dark flex-grow-1" id="selected-file-name">filename.csv</span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fa-solid fa-upload me-2"></i> Validate and Process Dataset
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="section-card p-4 rounded-4">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-list"></i> Required Columns</span>
+                <ul class="schema-list">
+                    {% for column in required_columns %}
+                    <li>{{ column }}</li>
+                    {% endfor %}
+                </ul>
+                <div class="signal-strip mt-4">
+                    Boolean fields accept <strong>Yes/No</strong>, <strong>True/False</strong>, or <strong>1/0</strong>.
+                    Missing numeric values are median-filled during processing.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

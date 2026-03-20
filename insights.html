@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <section class="page-hero mb-4">
+        <span class="section-label"><i class="fa-solid fa-compass-drafting"></i> Decision Summary</span>
+        <h1 class="display-5 mt-3 mb-3">The current dataset points to a clear operating playbook.</h1>
+        <p class="soft-text lead mb-0">
+            These recommendations are now derived from the same cleaned summary model used by the dashboard and story,
+            so the numbers stay consistent across the project.
+        </p>
+    </section>
+
+    <section class="metric-grid mb-4">
+        <article class="metric-card">
+            <span class="metric-label">Best Position</span>
+            <span class="metric-value">{{ summary.top_position['Product Position'] }}</span>
+            <p class="metric-note">{{ "{:,}".format(summary.top_position['Sales Volume']) }} units sold from this placement.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Top Category</span>
+            <span class="metric-value">{{ summary.top_category['Product Category'] }}</span>
+            <p class="metric-note">{{ "{:,}".format(summary.top_category['Sales Volume']) }} units across the category.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Primary Audience</span>
+            <span class="metric-value">{{ summary.top_demographic['Consumer Demographics'] }}</span>
+            <p class="metric-note">{{ "{:,}".format(summary.top_demographic['Sales Volume']) }} units from this segment.</p>
+        </article>
+        <article class="metric-card">
+            <span class="metric-label">Winning Price Stance</span>
+            <span class="metric-value">{{ summary.price_winner['Price Status'] }}</span>
+            <p class="metric-note">{{ "%.1f"|format(summary.price_winner['Sales Volume']) }} average units per product.</p>
+        </article>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <article class="insight-card h-100">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-tag"></i> Promotion Read</span>
+                <h2 class="mb-3">Promotion is additive, not optional.</h2>
+                <p class="soft-text">
+                    Current data shows a <strong>{{ "%.1f"|format(summary.promo_lift) }}%</strong> improvement in average sales
+                    for promoted items. That suggests the project should schedule offers around hero products and high-visibility slots.
+                </p>
+                <div class="signal-strip mt-3">
+                    Avoid broad discounting. Use promotion where placement and audience fit are already strong.
+                </div>
+            </article>
+        </div>
+        <div class="col-lg-6">
+            <article class="insight-card h-100">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-people-group"></i> Traffic Read</span>
+                <h2 class="mb-3">{{ summary.traffic_winner['Foot Traffic'] }} traffic stores convert best.</h2>
+                <p class="soft-text">
+                    They currently deliver <strong>{{ "%.1f"|format(summary.traffic_winner['Sales Volume']) }}</strong> average units.
+                    Match staffing, display quality, and inventory depth to this traffic profile before scaling experiments elsewhere.
+                </p>
+                <div class="signal-strip mt-3">
+                    Use lower-traffic zones for price tests and higher-traffic zones for velocity plays.
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <article class="section-card p-4 rounded-4 h-100">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-layer-group"></i> Category Mix</span>
+                <div class="recommendation-list">
+                    {% for row in summary.category_mix %}
+                    <div class="recommendation-card">
+                        <div class="d-flex justify-content-between gap-3 align-items-center">
+                            <div>
+                                <h3 class="h5 mb-1">{{ row['Product Category'] }}</h3>
+                                <p class="soft-text mb-0">{{ "{:,}".format(row['Sales Volume']) }} units</p>
+                            </div>
+                            <span class="stat-chip">{{ "%.1f"|format(row['sales_share']) }}%</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+        <div class="col-lg-6">
+            <article class="section-card p-4 rounded-4 h-100">
+                <span class="eyebrow mb-3"><i class="fa-solid fa-money-bill-trend-up"></i> Price and Promotion Benchmarks</span>
+                <div class="recommendation-list">
+                    {% for row in summary.promotion_sales %}
+                    <div class="recommendation-card">
+                        <h3 class="h5 mb-1">{{ row['Promotion Label'] }}</h3>
+                        <p class="soft-text mb-0">{{ "%.1f"|format(row['Sales Volume']) }} average units sold.</p>
+                    </div>
+                    {% endfor %}
+                    {% for row in summary.price_status_sales %}
+                    <div class="recommendation-card">
+                        <h3 class="h5 mb-1">{{ row['Price Status'] }}</h3>
+                        <p class="soft-text mb-0">{{ "%.1f"|format(row['Sales Volume']) }} average units sold.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <section class="section-card p-4 rounded-4">
+        <div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-3">
+            <div>
+                <span class="eyebrow"><i class="fa-solid fa-chess-knight"></i> Recommended Moves</span>
+                <h2 class="mt-3 mb-1">Three practical actions</h2>
+                <p class="soft-text mb-0">Focused changes with the clearest evidence in the data.</p>
+            </div>
+            <a class="btn btn-outline-primary" href="{{ url_for('dashboard') }}">Back to Dashboard</a>
+        </div>
+        <div class="recommendation-list">
+            {% for recommendation in summary.recommendations %}
+            <div class="recommendation-card">
+                <h3 class="h5 mb-2">{{ recommendation.title }}</h3>
+                <p class="soft-text mb-0">{{ recommendation.body }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}
